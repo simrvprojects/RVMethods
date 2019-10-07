@@ -1,0 +1,30 @@
+#' Example pedigrees
+#'
+#' This data set contains ped data for five families.
+#'
+#' @docType data
+#'
+#' @usage data(study_pedigrees)
+#'
+#' @format A data frame with 47 rows and 15 variables:
+#' \describe{
+#' \item{FamID}{Family identification number.}
+#' \item{ID}{Individual identification number.}
+#' \item{sex}{Sex identification variable: \code{sex = 0} for males, and \code{sex = 1} females. }
+#' \item{dadID}{Identification number of father}
+#' \item{momID}{Identification number of mother}
+#' \item{affected}{disease-affection status: \code{affected = TRUE} if individual has developed disease, and \code{FALSE} otherwise.}
+#' \item{DA1}{Paternally inherited allele at the familial disease locus: \code{DA1 = 1} if the casual variant is inherited, and \code{0} otherwise.}
+#' \item{DA2}{Maternally inherited allele at the familial disease locus: \code{DA2 = 1} if the casual variant is inherited, and \code{0} otherwise.}
+#' \item{birthYr}{The individual's birth year.}
+#' \item{onsetYr}{The individual's year of disease onset, when applicable, and \code{NA} otherwise.}
+#' \item{deathYr}{The individual's year of death, when applicable, and \code{NA} otherwise.}
+#' \item{available}{Availability status: \code{available = TRUE} if individual is recalled by the proband, and \code{FALSE} if not recalled or a marry-in.}
+#' \item{Gen}{The individual's generation number relative to the eldest pedigree founder.  That is, the seed founder will have \code{Gen = 1}, his or her offspring will have \code{Gen = 2}, etc. }
+#' \item{subtype}{When applicable, the subtype of the disease-affected relative.  "HL" denotes Hodgkin lymphoma and "NHL" denotes non-Hodgkin lymphoma.}
+#' \item{proband}{Proband identification variable: \code{proband = TRUE} if the individual is the proband, and \code{FALSE} otherwise.}
+#' }
+#'
+#' @references Christina Nieuwoudt and Jinko Graham (2018). \strong{SimRVPedigree: Simulate Pedigrees Ascertained for a Rare Disease.} \emph{R package version 0.3.0}. https://CRAN.R-project.org/package=SimRVPedigree.
+#'
+"study_pedigrees"

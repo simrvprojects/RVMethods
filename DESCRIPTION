@@ -1,0 +1,29 @@
+Package: RVMethods
+Type: Package
+Title: Compute Weights for Variants Shared Among Disease-Affected Relatives
+Version: 0.1.0
+Authors@R: c(person("Christina", "Nieuwoudt", 
+                    role = c("aut", "cre"),
+                    email = "cnieuwou@sfu.ca"),
+             person("Jinko", "Graham", role = "aut"),
+             person("Alexandre", "Bureau", role = "aut"))
+Description: NOTE: update authors section for non-exported functions which were 
+    copy/pasted from RVS package, specifically: marginalProb and, possibly,
+    createNetwork (renamed createNetworkTau). Compute sharing weights. 
+Depends:
+    R (>= 3.4.0)
+Imports:
+    gRain,
+    kinship2,
+    Matrix,
+    SimRVPedigree
+Suggests:
+    SimRVSequences,
+    knitr,
+    testthat,
+    rmarkdown,
+    roxygen2
+License: GNU General Public License
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
