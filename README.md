@@ -1,30 +1,24 @@
----
-output: github_document
----
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "README-"
-)
-```
-
 # RVMethods
-RVMethods provides routines to compute statistics for priortization of RVs observed in family-based studies.  This software is considered a work in progress. 
+
+RVMethods provides routines to compute statistics for priortization of
+RVs observed in family-based studies. This software is considered a work
+in progress.
 
 ## Installation
+
 You can install RVMethods from github with:
 
-```{r gh-installation, eval = FALSE}
+``` r
 # install.packages("devtools")
 devtools::install_github("cnieuwoudt/RVMethods")
 ```
 
-## Example Usage 
-```{r, eval = FALSE}
+## Example Usage
+
+``` r
 library(RVMethods)
 #load example founder data
 data("pop_fdat")
@@ -52,12 +46,4 @@ head(FBSdists$GlobalTransDist)
 
 #View first few rows of the local likelihood ratio, RVS, and modified RVS statistics over all possible conifgurations
 head(FBSdists$LocalDist)
-
 ```
-
-
-
-
-
-
-
