@@ -109,6 +109,27 @@ numerProb <- function(net, procPed)
   return(marginalProb(net, c(rvInCarriers, noRvInNonCarriers)))
 }
 
+
+
+
+
+#' denominator of sharing probability
+#' @keywords internal
+#'
+#' @description calculates the denominator of the sharing probability
+#' outline in section 2.1 of Bureau et al.
+#' @param gRain bayesian network
+#' @param procPed pedigree object that has been process with processPedigree
+#' @return denominator value
+denomProb <- function(net, procPed)
+{
+  noRvInAny <- sapply(simplify=FALSE, FUN=function(dummy) 0,
+                      X=as.character(procPed$affected))
+  return(1 - marginalProb(net, noRvInAny))
+}
+
+
+
 #' Calculate the probability of an observed sharing configuration given specified transmission probabilities.
 #' @param ped An object of class \code{ped}.
 #' @param carriers subjects in pedigree share the variant
@@ -120,7 +141,8 @@ numerProb <- function(net, procPed)
 #' @keywords internal
 compute_sharingProb <- function(ped, subtypes, tau,
                                 carriers = NULL,
-                                subtype_weights = NULL){
+                                subtype_weights = NULL,
+                                unconditioned = TRUE){
 
   #process the pedigree
   procPed <- processPed(ped, carriers, subtypes)
@@ -144,7 +166,7 @@ compute_sharingProb <- function(ped, subtypes, tau,
 
   # sum over probs, conditioning on each founder introducing variant
   numer <- 0
-
+  denom <- 0
   #get founder weights
   fW <- get_founderWeights(procPed, subtype_weights)
   for (f in 1:length(procPed$founders)) { #TODO: use sapply here
@@ -153,9 +175,10 @@ compute_sharingProb <- function(ped, subtypes, tau,
     condNet <- gRain::setEvidence(condNet, as.character(procPed$founders[f]), '1')
 
     # compute probability
-    #denom <- denom + denomProb(condNet, procPed)
     numer <- numer + numerProb(condNet, procPed)*fW[f]
+
   }
 
   return(numer)
 }
+

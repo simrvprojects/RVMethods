@@ -74,3 +74,4 @@ compute_familyWeights(ped = fam133,
                       subtypes = c("HL", "NHL"))
 
 }
+\keyword{internal}

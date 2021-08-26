@@ -5,7 +5,7 @@
 \title{Compute weights for variants shared among disease-affected study participants}
 \usage{
 compute_studyWeights(famStudy_obj, subtypes, tau_increment = 0.05,
-  subtype_weights = NULL)
+  subtype_weights = NULL, pg_bar = TRUE)
 }
 \arguments{
 \item{famStudy_obj}{An object of class \code{famStudy}, i.e. returned by the \code{sim_RVstudy} function (included in the \code{SimRVSequences} package).}
@@ -55,3 +55,4 @@ SNV_weights = compute_studyWeights(famStudy_obj = ped_seq,
 head(SNV_weights)
 
 }
+\keyword{internal}

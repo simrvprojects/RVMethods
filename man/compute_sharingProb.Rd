@@ -5,7 +5,7 @@
 \title{Calculate the probability of an observed sharing configuration given specified transmission probabilities.}
 \usage{
 compute_sharingProb(ped, subtypes, tau, carriers = NULL,
-  subtype_weights = NULL)
+  subtype_weights = NULL, unconditioned = TRUE)
 }
 \arguments{
 \item{ped}{An object of class \code{ped}.}

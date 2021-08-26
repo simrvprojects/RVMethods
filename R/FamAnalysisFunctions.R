@@ -1,57 +1,3 @@
-#' Create grid of tau values
-#'
-#' @param increment_width The distance between consecutive tau values
-#' @inheritParams compute_familyWeights
-#'
-#' @return tau_grid a matrix of taus
-#' @keywords internal
-make_tauGrid <- function(increment_width = 0.05, constrained = TRUE){
-
-  #create grid of tau values
-  tau_grid <- expand.grid(seq(0.5, 1, by = increment_width), seq(0.5, 1, by = increment_width))
-
-  #if we are considering the constrined space, reduce
-  #taus to combinations for which tau_A > tau_B
-  if (constrained) {
-    tau_grid <- tau_grid[which(tau_grid[, 1] > tau_grid[, 2]), ]
-    tau_grid[(nrow(tau_grid) + 1), ] <- c(0.5, 0.5)
-  }
-
-  tau_grid <- tau_grid[order(tau_grid[, 1], tau_grid[, 2], decreasing = FALSE), ]
-
-  row.names(tau_grid) = NULL
-  colnames(tau_grid) = c("tau_A", "tau_B")
-
-  return(tau_grid)
-}
-
-
-#' Find the values of tau that maximize the likelihood function
-#'
-#' Find the values of tau that maximize the likelihood function. NOTE: if there is not a unique MCLE, this funciton orders the results conservatively.  That is, the smallest values of tau_A and tau_B are the first values returned.
-#'
-#' @inheritParams test_allcombos
-#' @param like_mat The matrix of likelihood values given a sharing configuation and values of tau, i.e. the first item returned by \code{\link{test_allcombos}}.
-#'
-#' @return  A list of taus that maximize the likelihood for each configuration
-#' @keywords internal
-get_MLE <- function(like_mat, tau_grid){
-
-  # max_like <- apply(like_mat, 2, function(x){
-  #   x[which.max(x)]
-  # })
-  #
-  # max_taus <- lapply(1:ncol(like_mat), function(x){
-  #   tau_grid[like_mat[, x] == like_mat[max_like[[x]], x], ]
-  # })
-
-  max_taus <- apply(like_mat, 2, function(x){
-    tau_grid[x == max(x), ]
-  })
-
-  return(max_taus)
-}
-
 #' Compute sharing probabilities for every configuration of disease-affected relatives and initialization of tau
 #'
 #' Compute sharing probabilities for every configuration of disease-affected relatives and initialization of tau
@@ -63,6 +9,16 @@ get_MLE <- function(like_mat, tau_grid){
 #' @return \item{\code{like_mat} }{A matrix of values that represent the likelihood given a configuration (column) and relized value of tau (row).}
 #' @return \item{\code{configs} }{A matrix of sharing configurations.  The columns are named for the IDs of the disease-affected relatives in the pedigree. When \code{TRUE} the individual is a carrier of the cRV, when \code{FALSE} the individual is not a carrier.}
 #' @keywords internal
+#' @examples
+#' library(RVMethods)
+#' data(study_pedigrees)
+#'
+#' library(SimRVPedigree)
+#' plot(study_pedigrees[study_pedigrees$FamID == 58, ])
+#' test_allcombos(ped = study_pedigrees[study_pedigrees$FamID == 58, ],
+#'                subtypes = c("HL", "NHL"),
+#'                tau_grid = make_tauGrid())
+#'
 test_allcombos <- function(ped, subtypes, tau_grid,
                            subtype_weights = NULL){
 
@@ -87,6 +43,7 @@ test_allcombos <- function(ped, subtypes, tau_grid,
                           subtype_weights)})
   })
   like_mat <- do.call(cbind, like_mat)
+
 
   #compute the binID, this is a numeric identifier for the configuration.
   #The configuration is interpreted as a base 2 number and then converted to
@@ -200,6 +157,11 @@ compute_famWeights_internal <- function(famLike_results, tau_grid, ped,
     compute_transmission_weight(all_stats = famWeights, config_index = x)
   })
 
+  #calculate the modified RVS weight
+  famWeights$w_LRbasic <- sapply(1:nrow(famWeights), function(x){
+    compute_LRB_weight(all_stats = famWeights, config_index = x)
+  })
+
   #compute the RVS weight
   famWeights$w_RVS <- sapply(1:nrow(famWeights), function(x){
     compute_RVS_weight(all_stats = famWeights, config_index = x)
@@ -257,7 +219,7 @@ compute_famWeights_internal <- function(famLike_results, tau_grid, ped,
 #'
 #'
 #' @return A data frame containing the weights for each configuration in the pedigree. See Details.
-#' @export
+#' @keywords internal
 #'
 #' @examples
 #' library(SimRVPedigree)

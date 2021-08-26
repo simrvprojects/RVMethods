@@ -61,7 +61,7 @@ remove_invalidConfigs <- function(test_allCombos_result){
 #' @importFrom Matrix colSums
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
-#' @export
+#' @keywords internal
 #'
 #' @return A dataframe cataloging all of the SNVs, with weights included as columns w_LR, w_RVS, and w_RVS2.  See \code{\link{compute_familyWeights}} documentation for weight definitions.
 #'
@@ -95,7 +95,8 @@ remove_invalidConfigs <- function(test_allCombos_result){
 #'
 compute_studyWeights <- function(famStudy_obj, subtypes,
                                  tau_increment = 0.05,
-                                 subtype_weights = NULL){
+                                 subtype_weights = NULL,
+                                 pg_bar = TRUE){
 
   #create tau grid
   #NOTE: make_tauGrid now orders taus to save time later.
@@ -159,14 +160,21 @@ compute_studyWeights <- function(famStudy_obj, subtypes,
 
 
   message("Compute pedigree-specific statistics... this may take a few minutes.")
-  pb <- txtProgressBar(min = 0, max = length(study_FamIDs), style = 3)
+  if (pg_bar){
+    pb <- txtProgressBar(min = 0, max = length(study_FamIDs), style = 3)
+  }
+
   fam_likeGrids <- list()
   for (i in 1:length(study_FamIDs)){
     fam_likeGrids[[i]] <- test_allcombos(ped = famStudy_obj$ped_files[famStudy_obj$ped_files$FamID == study_FamIDs[[i]], ],
                                          subtypes, tau_grid, subtype_weights)
-   setTxtProgressBar(pb, i)
+    if (pg_bar){
+      setTxtProgressBar(pb, i)
+    }
   }
-  close(pb)
+  if (pg_bar){
+    close(pb)
+  }
 
   # Remove any invalid configurations from the all combos result.
   # Invalid configurations are configurations that are not possible
@@ -198,7 +206,7 @@ compute_studyWeights <- function(famStudy_obj, subtypes,
     global_Weights = list()
 
     for(i in 1:length(global_famCombos_index)){
-      global_Weights[[i]] <- compute_global_weight(likeGrids_byFam = fam_likeGrids[global_famCombos_index[[i]]],
+      global_Weights[[i]] <- compute_global_weight_internal(likeGrids_byFam = fam_likeGrids[global_famCombos_index[[i]]],
                                                    weights_byFam = fam_sharingWeights[global_famCombos_index[[i]]],
                                                    famID_index = global_famCombos_index[[i]],
                                                    tau_grid)
@@ -207,8 +215,10 @@ compute_studyWeights <- function(famStudy_obj, subtypes,
 
   message("Tabulating weights")
   #initialize weight variables in SNV_map
+  SNV_map$RVsharing = NA
   SNV_map$LR = NA
   SNV_map$w_LR = NA
+  SNV_map$w_LRbasic = NA
   SNV_map$w_RVS = NA
   SNV_map$w_RVS2 = NA
 
@@ -225,11 +235,12 @@ compute_studyWeights <- function(famStudy_obj, subtypes,
        #If only a single family segregates the RV, we can simply pull their weights
        #from the results that were computed for the family. These are stored in the
        #fam_sharingWeights list
-       SNV_map[i, c("LR", "w_LR", "w_RVS", "w_RVS2")] <- fam_sharingWeights[[loop_fams_index]][fam_sharingWeights[[loop_fams_index]]$binID == loop_bins, c("LR", "w_LR", "w_RVS", "w_RVS2")]
+       SNV_map[i, c("RVsharing", "LR", "w_LR", "w_LRbasic", "w_RVS", "w_RVS2")] <- fam_sharingWeights[[loop_fams_index]][fam_sharingWeights[[loop_fams_index]]$binID == loop_bins, c("RVsharing", "LR", "w_LR", "w_LRbasic", "w_RVS", "w_RVS2")]
      } else {
        #check to see if this binID is a valid configuration, if not
        #weights will be set to zero
-       SNV_map[i, c("LR", "w_LR", "w_RVS", "w_RVS2")] <- c(0, 0, 0, 0)
+       warning("family binID triggered **tell CN if you see this message**")
+       SNV_map[i, c("RVsharing", "LR", "w_LR", "w_LRbasic", "w_RVS", "w_RVS2")] <- c(0, 0, 0, 0, 0, 0)
      }
    } else if (length(loop_fams_index) > 1){
      #THIS OPTION IS USED FOR GLOBAL CONFIGURATIONS SPANNING MULTIPLE FAMILIES
@@ -244,12 +255,19 @@ compute_studyWeights <- function(famStudy_obj, subtypes,
                                   function(x){all(x == loop_bins)}))
        if(length(Config_line) != 0){
 
+         #store the RVsahring
+         SNV_map$RVsharing[i] <- global_Weights[[global_set_index]][Config_line, "RVsharing"]
+
          #store the LR value
          SNV_map$LR[i] <- global_Weights[[global_set_index]][Config_line, "LR"]
 
 
          #compute transmission based-weight
          SNV_map$w_LR[i] <- compute_transmission_weight(all_stats = global_Weights[[global_set_index]],
+                                                        config_index = Config_line)
+
+         #compute transmission based-weight
+         SNV_map$w_LRbasic[i] <- compute_LRB_weight(all_stats = global_Weights[[global_set_index]],
                                                         config_index = Config_line)
 
          #compute RVS weight
@@ -261,7 +279,7 @@ compute_studyWeights <- function(famStudy_obj, subtypes,
                                                          config_index = Config_line)
 
        } else {
-         SNV_map[i, c("LR", "w_LR", "w_RVS", "w_RVS2")] <- c(0, 0, 0, 0)
+         SNV_map[i, c("RVsharing", "LR", "w_LR", "w_LRbasic", "w_RVS", "w_RVS2")] <- c(0, 0, 0, 0, 0, 0)
        }
      }
 
@@ -279,12 +297,12 @@ compute_studyWeights <- function(famStudy_obj, subtypes,
   })
 
 
-  return(SNV_map)
+  #return(SNV_map)
 
-  # return(list(SNV_map = SNV_map,
-  #             affected_haplos = Affected_ped_haplos,
-  #             affected_haplo_map = Affected_haplo_map,
-  #             ped_files = famStudy_obj$ped_files))
+  return(list(SNV_map = SNV_map,
+              affected_haplos = Affected_ped_haplos,
+              affected_haplo_map = Affected_haplo_map,
+              ped_files = famStudy_obj$ped_files))
 }
 
 

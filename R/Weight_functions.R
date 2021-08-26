@@ -40,3 +40,16 @@ compute_RVS_weight <- function(all_stats, config_index){
                             & all_stats$K >= all_stats$K[config_index]],
         na.rm = TRUE)
 }
+
+
+
+#' Compute the simple LR weight
+#'
+#' @inheritParams compute_transmission_weight
+#'
+#' @return the RVS weight
+#' @keywords internal
+compute_LRB_weight <- function(all_stats, config_index){
+  1/sum(all_stats$RVsharing[all_stats$LR >= all_stats$LR[config_index]],
+      na.rm = TRUE)
+}
