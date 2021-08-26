@@ -777,14 +777,24 @@ compute_globalDist <- function(peds, subtypes, carrier_prob = 0.002,
 
 
 
-#' Compute all distributions for all considered statistics
+#' Compute prioritization statistics and probabilities
 #'
+#' Computes all considered prioritization statistics and probabilities
 #'
 #' @inheritParams compute_familyWeights
 #' @param peds A ped object containing two or more pedigrees.
 #' @param carrier_prob The cumulative carrier probabilty of all cRVs as a group.
 #'
-#' @return A data frame of global configurations anf weights for the set of provided families.
+#' @return A list of three \code{data.frames}: \code{GlobalDist}, \code{GlobalTransDist}, and \code{LocalDist}; which include:
+#' @return \item{RV status indicators}{Binary indicators of RV status for each disease-affected relative, notated as \code{FamID:ID}, where \code{FamID} is the family identification number and \code{ID} is the individual identification number.}
+#' @return \item{L_max/L_null}{The likelihood under the alternative and null hypotheses}
+#' @return \item{LR}{The likelihood ratio statistic}
+#' @return \item{null_configProb}{The null probability of the sharing configuration.}
+#' @return \item{tau_A/tau_B}{The values of tau_A and tau_B under the alternative hypothesis.}
+#' @return \item{K}{The number of relatives that were observed to carry the RV}
+#' @return \item{LR_pvalue}{the p-value if the LR statistic}
+#' @return \item{binID}{a unique ID for each sharing configuration.}
+#'
 #' @export
 #' @examples
 #' library(RVMethods)
@@ -853,19 +863,19 @@ compute_distributions <- function(peds, subtypes, carrier_prob = 0.002,
   # distribution.  This will be a critical variable for computing p-values under this
   # assumption.
 
-  print(paste0("Start Global Distribution: ", Sys.time()))
+  print(paste0("Generate Results: ", Sys.time()))
   #compute probabilities and statistics for the global distribution
   D1_global_sharing_byBinID <- condition_globalDist_zeroConfig(likeGrids_byFam = fam_likeGrids,
                                                             famID_index = famIndex,
                                                             tau_grid)
   #semi-global
-  print(paste0("Start Semi-Global Distribution: ", Sys.time()))
+#  print(paste0("Start Semi-Global Distribution: ", Sys.time()))
   D2_global_sharing_byBinID <- approx_globalDist(likeGrids_byFam = fam_likeGrids,
                                                famID_index = famIndex,
                                                tau_grid)
 
   #conditioned semi-global
-  print(paste0("Start Local Distribution: ", Sys.time()))
+#  print(paste0("Start Local Distribution: ", Sys.time()))
   D3_global_sharing_byBinID <- conditioned_semiGlobalDist(likeGrids_byFam = fam_likeGrids,
                                                        famID_index = famIndex,
                                                        tau_grid)
@@ -887,7 +897,7 @@ compute_distributions <- function(peds, subtypes, carrier_prob = 0.002,
                        D1_global_sharing_byBinID[, -c(1:length(study_FamIDs))])
   global_dist$K = apply(fam_configs, 1, sum)
 
-  print(paste0("Global P-value: ", Sys.time()))
+#  print(paste0("Global P-value: ", Sys.time()))
   if(useK){
     #compute p_value
     global_dist$LR_pvalue <- sapply(1:nrow(global_dist), function(x){
@@ -909,7 +919,7 @@ compute_distributions <- function(peds, subtypes, carrier_prob = 0.002,
   semiglobal_dist$K = apply(fam_configs, 1, sum)
 
 
-  print(paste0("Semi-Global P-value: ", Sys.time()))
+#  print(paste0("Semi-Global P-value: ", Sys.time()))
   if(useK){
     #compute p_value
     semiglobal_dist$LR_pvalue <- sapply(1:nrow(global_dist), function(x){
@@ -940,7 +950,7 @@ compute_distributions <- function(peds, subtypes, carrier_prob = 0.002,
     sum(colnames(fam_configs)[fam_configs[x, ] == 1] %in% GCsub_list)
   })
 
-  print(paste0("Local P-value: ", Sys.time()))
+#  print(paste0("Local P-value: ", Sys.time()))
   if(useK){
     #calculate the p-value for the likelihood ratio statistic
     condsemiglobal_dist$LR_pvalue <- sapply(1:nrow(condsemiglobal_dist), function(x){
@@ -958,7 +968,7 @@ compute_distributions <- function(peds, subtypes, carrier_prob = 0.002,
   }
 
 
-  print(paste0("RVS-Based P-value: ", Sys.time()))
+#  print(paste0("RVS-Based P-value: ", Sys.time()))
   condsemiglobal_dist$RVS_pvalue <- sapply(1:nrow(fam_configs), function(x){
     sum(condsemiglobal_dist$null_configProb[condsemiglobal_dist$null_configProb <= condsemiglobal_dist$null_configProb[x]
                                     & condsemiglobal_dist$K >= condsemiglobal_dist$K[x]
@@ -988,9 +998,9 @@ compute_distributions <- function(peds, subtypes, carrier_prob = 0.002,
   })
 
 
-  return(list(globDist = global_dist,
-              semiglobDist = semiglobal_dist,
-              condsemiglobDist = condsemiglobal_dist))
+  return(list(GlobalDist = global_dist,
+              GlobalTransDist = semiglobal_dist,
+              LocalDist = condsemiglobal_dist))
 
 }
 

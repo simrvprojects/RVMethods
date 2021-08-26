@@ -2,7 +2,7 @@
 % Please edit documentation in R/LRDistribution_Functions.R
 \name{compute_distributions}
 \alias{compute_distributions}
-\title{Compute all distributions for all considered statistics}
+\title{Compute prioritization statistics and probabilities}
 \usage{
 compute_distributions(peds, subtypes, carrier_prob = 0.002,
   tau_increment = 0.05, subtype_weights = NULL, useK = FALSE)
@@ -19,10 +19,26 @@ compute_distributions(peds, subtypes, carrier_prob = 0.002,
 \item{subtype_weights}{A vector of length 2.  When assuming an informative prior for the founders; the weights the individuals with subtypes A and B, respectively.  By default, \code{subtype_weights = NULL} so that no founder weights are applied (i.e. flat founder prior).}
 }
 \value{
-A data frame of global configurations anf weights for the set of provided families.
+A list of three \code{data.frames}: \code{GlobalDist}, \code{GlobalTransDist}, and \code{LocalDist}; which include:
+
+\item{RV status indicators}{Binary indicators of RV status for each disease-affected relative, notated as \code{FamID:ID}, where \code{FamID} is the family identification number and \code{ID} is the individual identification number.}
+
+\item{L_max/L_null}{The likelihood under the alternative and null hypotheses}
+
+\item{LR}{The likelihood ratio statistic}
+
+\item{null_configProb}{The null probability of the sharing configuration.}
+
+\item{tau_A/tau_B}{The values of tau_A and tau_B under the alternative hypothesis.}
+
+\item{K}{The number of relatives that were observed to carry the RV}
+
+\item{LR_pvalue}{the p-value if the LR statistic}
+
+\item{binID}{a unique ID for each sharing configuration.}
 }
 \description{
-Compute all distributions for all considered statistics
+Computes all considered prioritization statistics and probabilities
 }
 \examples{
 library(RVMethods)
@@ -32,18 +48,10 @@ library(SimRVPedigree)
 plot(study_pedigrees[study_pedigrees$FamID == 304, ])
 plot(study_pedigrees[study_pedigrees$FamID == 58, ])
 
-peds = study_pedigrees[study_pedigrees$FamID \%in\%c(58, 304), ]
-subtypes = c("HL", "NHL")
 
+FBSDists = compute_distributions(ped = study_pedigrees[study_pedigrees$FamID \%in\% c(58, 304), ],
+                                 subtypes = c("HL", "NHL"),
+                                 carrier_prob = 0.002)
 
-myCombos = test_allcombos_includeZero(ped = study_pedigrees[study_pedigrees$FamID == 58, ],
-                                      subtypes = c("HL", "NHL"),
-                                      tau_grid = make_tauGrid(),
-                                      carrier_prob = 0.002)
-
-my_GDist = compute_globalDist(peds = study_pedigrees[study_pedigrees$FamID \%in\%c(58, 304), ],
-                                subtypes = c("HL", "NHL"))
-
-order(my_GDist$LR) == order(my_GDist$w_LR)
 
 }
