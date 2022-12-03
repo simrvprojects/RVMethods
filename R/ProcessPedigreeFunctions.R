@@ -164,7 +164,7 @@ processPed <- function(ped, carriers, subtypes){
   # NOTE: pedigrees simulated by SimRVPedigree and
   # converted by ped2pedigree will have additional info
   # in this matrix. We want to retain only affection statuses
-  if (class(pdgree$affected) == "matrix") {
+  if (inherits(pdgree$affected,"matrix")) {
     pdgree$affected <- pdgree$affected[, 1]
   }
 
