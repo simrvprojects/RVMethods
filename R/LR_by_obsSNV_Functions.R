@@ -1,3 +1,6 @@
+##----------------------------------------------------------------------------
+## NOTE: This source file is NOT USED and appears to be wrong.
+##----------------------------------------------------------------------------
 #' Convert vector of SNV statuses to TRUE/FALSE configuration
 #'
 #' @param SNVvec a column of the haplotype data matrix
