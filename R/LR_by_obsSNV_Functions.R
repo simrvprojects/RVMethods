@@ -1,5 +1,6 @@
 ##----------------------------------------------------------------------------
-## NOTE: This source file is NOT USED and appears to be wrong.
+## NOTE: This source file is NOT USED. The idea of computing statistics for 
+## observed configurations is useful for ranking, but not p-values.
 ##----------------------------------------------------------------------------
 #' Convert vector of SNV statuses to TRUE/FALSE configuration
 #'
@@ -106,7 +107,7 @@ test_subcombos_withZero <- function(ped, subtypes, tau_grid, carrier_prob, seq_d
 
   #store the IDs of the affected relatives
   aff_Ids <- ped$ID[ped$affected & ped$available]
-
+  colnames(config) = as.character(aff_Ids) # As in test_allcombos_withZero
   # compute and store the likelihood results in a matrix
   # ROW: realizations of tau
   # COLUMNS: different sharing configurations
